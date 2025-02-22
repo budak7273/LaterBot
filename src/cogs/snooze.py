@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta, timezone
+
 import discord
 from discord.enums import IntegrationType, InteractionContextType
 from discord.ext import commands
@@ -24,7 +26,19 @@ class Snooze(commands.Cog):
     async def real_quick_snooze_message(
         self, ctx: discord.ApplicationContext, message: discord.Message
     ):
-        await ctx.respond(f"Quick Snooze on Message ID: `{message.id}`")
+
+        current_utc_time = datetime.now(timezone.utc)
+        remind_at = current_utc_time + timedelta(hours=6)
+
+        epoch_timestamp = int(remind_at.timestamp())
+        embed = discord.Embed(
+            title=":white_check_mark: Reminding you Later™",
+            description=f"Got it - you'll be reminded about {message.jump_url} <t:{epoch_timestamp}:R> (<t:{epoch_timestamp}:F>)!",
+            color=discord.Color.green(),
+        )
+        embed.set_footer(text="Quick Snooze")
+
+        await ctx.respond(embed=embed)
 
     @commands.message_command(
         name="Quiz Snooze",
@@ -42,10 +56,6 @@ class Snooze(commands.Cog):
 
     @commands.message_command(
         name="DEBUG Quiz Snooze",
-        # contexts={
-        #     InteractionContextType.guild,
-        # },
-        # integration_types={IntegrationType.guild_install},
         guild_ids=[1267160007854784633],
     )
     async def debug_quick_snooze_message(
