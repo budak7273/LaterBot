@@ -8,20 +8,23 @@ Add the bot to your server with this link: TODO
 
 ## Stack
 
-- Developed on windows
-- [pyenv-win](https://github.com/pyenv-win/pyenv-win)
-- Python `pyenv install versionHere`, `pyenv local versionHere`
+- Developed on Windows in VSCode (see)
+- Python
   - The repo's `.python-version` file indicates the version to use
-- Activate python venv (`.\venv\Scripts\Activate.ps1`)
-- Install requirements `pip install -r .\requirements.txt`
-  - NOTE: Until pycord fixes their stuff, may need to install `audioop-lts; python_version>='3.13'`
+  - Install using [pyenv-win](https://github.com/pyenv-win/pyenv-win)
+    - `pyenv install versionHere`, `pyenv local versionHere`
+- [Pycord](https://github.com/Pycord-Development/pycord)
+  - [Ezcord](https://github.com/tibue99/ezcord)
+  - [cogwatch](https://github.com/robertwayne/cogwatch/) to reload cogs at runtime
+    - Note: changes to application command names/syntax still requires a full bot restart
+- Sqlite (probably switch to postgres later)
 
 ## Development
 
-Set up the `.env` file with a bot token.
-
-Make sure to activate the venv if your editor doesn't do so automatically (see above).
-
-When running, use `python .\bot.py` in the `/src/` directory.
-
-Linter rule help <https://pylint.readthedocs.io/en/latest/user_guide/messages/message_control.html>
+- Remember to make python venv (`python -m venv venv`)
+- Remember to activate python venv (`.\venv\Scripts\Activate.ps1`)
+- Install requirements `pip install -r .\requirements.txt`
+  - NOTE: Until pycord fixes their stuff, `audioop-lts; python_version>='3.13'` is needed. This is in the requirements file.
+- Set up the `.env` file with a bot token.
+- When running, use `python .\bot.py` in the `/src/` directory.
+- Linter rule help <https://pylint.readthedocs.io/en/latest/user_guide/messages/message_control.html>

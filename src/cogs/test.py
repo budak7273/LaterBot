@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from ezcord import emb
 
 
 class Test(commands.Cog):
@@ -14,6 +15,8 @@ class Test(commands.Cog):
     async def get_message_id(
         self, ctx: discord.ApplicationContext, message: discord.Message
     ):
+        await emb.error(ctx, "Error message")
+        await emb.info(ctx, "Info message", title="Info Title")  # set an embed title
         await ctx.respond(f"Message ID: `{message.id}`")
 
 
