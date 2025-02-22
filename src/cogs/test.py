@@ -8,7 +8,7 @@ class Test(commands.Cog):
 
     @discord.user_command()
     async def greet(self, ctx, member: discord.Member):
-        await ctx.respond(f"{ctx.author.mention} says hello to {member.mention}!")
+        await ctx.respond(f"{ctx.author.mention} says hello world to {member.mention}!")
 
     # creates a global message command. use guild_ids=[] to create guild-specific commands.
     @discord.message_command(name="Get Message ID")

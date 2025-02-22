@@ -18,4 +18,10 @@ Add the bot to your server with this link: TODO
 
 ## Development
 
+Set up the `.env` file with a bot token.
+
+Make sure to activate the venv if your editor doesn't do so automatically (see above).
+
+When running, use `python .\bot.py` in the `/src/` directory.
+
 Linter rule help <https://pylint.readthedocs.io/en/latest/user_guide/messages/message_control.html>
