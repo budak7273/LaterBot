@@ -134,5 +134,6 @@ token.txt
 
 # SQLite database files
 *.db
+*.sqlite3*
 
 # Organize below entries!

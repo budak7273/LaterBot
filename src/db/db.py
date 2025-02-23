@@ -56,8 +56,8 @@ class ReminderDB(ezcord.DBHandler):
         )
 
 
-print("Setting up database...")
+print("Setting up ezcord database...")
 
 db = ReminderDB()
 
-print("Database started.")
+print("ezcord Database started.")
