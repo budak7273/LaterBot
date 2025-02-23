@@ -26,5 +26,16 @@ Add the bot to your server with this link: TODO
 - Install requirements `pip install -r .\requirements.txt`
   - NOTE: Until pycord fixes their stuff, `audioop-lts; python_version>='3.13'` is needed. This is in the requirements file.
 - Set up the `.env` file with a bot token.
+- For first time db setup, use `python .\db-init.py` in the `/src/` directory.
 - When running, use `python .\bot.py` in the `/src/` directory.
 - Linter rule help <https://pylint.readthedocs.io/en/latest/user_guide/messages/message_control.html>
+
+## Future
+
+- Docker container
+- CI/CD pipeline
+- DB migrations with [aerich](https://github.com/tortoise/aerich)
+- Intelligent reminder distribution loop (instead of a fixed interval, wait until the next reminder is due, unless one is scheduled sooner)
+- Per-user "remind at" preset times
+- Auto db cleanup of delivered reminders
+- More robust error handling

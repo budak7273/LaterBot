@@ -1,3 +1,5 @@
+import traceback
+
 import ezcord
 from cogwatch import Watcher
 from dotenv import load_dotenv
@@ -49,10 +51,15 @@ async def first_on_ready():
     await watcher.start()
 
     log.info("Connecting to database...")
-    await Tortoise.init(
-        db_url="sqlite://laterbot-tortoise.sqlite3",
-        modules={"models": ["db.models.reminders"]},
-    )
+    try:
+        await Tortoise.init(
+            db_url="sqlite://laterbot-tortoise.sqlite3",
+            # TODO model auto-discovery?
+            modules={"models": ["db.models.reminder"]},
+        )
+    except Exception as e:
+        log.error(f"Error connecting to database: {traceback.format_exc()}")
+        exit(1)
     log.info("Database connection established.")
 
 

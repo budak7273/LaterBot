@@ -7,7 +7,7 @@ async def init():
     """
     await Tortoise.init(
         db_url="sqlite://laterbot-tortoise.sqlite3",
-        modules={"models": ["db.models.reminders"]},
+        modules={"models": ["db.models.reminder"]},
     )
     # Generate the schema
     await Tortoise.generate_schemas()
