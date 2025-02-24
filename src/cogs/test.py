@@ -3,7 +3,6 @@ from discord import IntegrationType, InteractionContextType
 from discord.ext import commands
 from ezcord import emb, log
 
-from db.db import db
 from db.models.reminder import Reminder
 
 
@@ -35,16 +34,6 @@ class Test(commands.Cog):
     #     log.info(f"Getting reminders for {member.id}")
     #     reminders = await Reminder.filter(discord_user_id=member.id)
     #     await emb.success(ctx, f"Result: {reminders}")
-
-    # @commands.message_command(name="Get DB Row")
-    # async def get_message_id(
-    #     self, ctx: discord.ApplicationContext, message: discord.Message
-    # ):
-
-    #     await db.add_coins(12345, 100)
-    #     result = await db.get_one_user(12345)
-    #     log.info(str(result))  # (12345, 100)
-    #     await emb.success(ctx, f"Result: {result}")
 
     @commands.slash_command()
     async def button_test(self, ctx: discord.ApplicationContext):

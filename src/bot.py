@@ -13,12 +13,6 @@ load_dotenv()
 
 class LaterBot(ezcord.Bot):
 
-    # def run(self, token: str, **kwargs):
-    #     """
-    #     Override enable db setup
-    #     """
-    #     super().run(**kwargs)
-
     async def close(self):
         """
         Override to close db connections
@@ -44,9 +38,9 @@ async def first_on_ready():
     """Called only once per bot startup"""
     log.info("first_on_ready (called only once)")
 
-    # Use cogwatch to (hot) reload cogs
+    # Use cogwatch to hot reload cogs
     # Note: preload does not seem to update discord's app command records; still requires bot restart
-    # which is why ezcord bot.load_cogs is still used
+    # which is why ezcord bot.load_cogs() is still used in startup()
     watcher = Watcher(bot, path="cogs", preload=False, debug=True)
     await watcher.start()
 

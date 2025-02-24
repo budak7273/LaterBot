@@ -8,16 +8,18 @@ Add the bot to your server with this link: TODO
 
 ## Stack
 
-- Developed on Windows in VSCode (see)
+- Developed on Windows in VSCode
 - Python
   - The repo's `.python-version` file indicates the version to use
   - Install using [pyenv-win](https://github.com/pyenv-win/pyenv-win)
     - `pyenv install versionHere`, `pyenv local versionHere`
 - [Pycord](https://github.com/Pycord-Development/pycord)
   - [Ezcord](https://github.com/tibue99/ezcord)
+    - Logging and error handling
   - [cogwatch](https://github.com/robertwayne/cogwatch/) to reload cogs at runtime
     - Note: changes to application command names/syntax still requires a full bot restart
 - Sqlite (probably switch to postgres later)
+  - Tortoise ORM
 
 ## Development
 

@@ -11,12 +11,23 @@ from db.models.reminder import Reminder
 
 class ReminderView(discord.ui.View):
     @discord.ui.button(label="Re-snooze", style=discord.ButtonStyle.gray, emoji="🔃")
-    async def button_callback(
+    async def re_snooze_button(
         self, button: discord.Button, interaction: discord.Interaction
     ):
-        await interaction.response.send_message(
-            "You clicked the button!", ephemeral=True
-        )
+        button.disabled = True
+        button.label = "Re-snoozed"
+        button.emoji = "🔕"
+
+        # log.info(f"Interaction data: {interaction.data}")
+
+        await interaction.response.edit_message(view=self)
+
+    # @discord.ui.button(label="Got it!", style=discord.ButtonStyle.success, emoji="✅")
+    # async def dismiss_button(
+    #     self, button: discord.Button, interaction: discord.Interaction
+    # ):
+    #     # TODO unknown webhook error
+    #     await interaction.delete_original_message()
 
 
 class ReminderDistribution(commands.Cog):
@@ -96,7 +107,7 @@ class ReminderDistribution(commands.Cog):
         reminder.delivered = True
         await reminder.save()
 
-    @tasks.loop(seconds=10.0)
+    @tasks.loop(seconds=3.0)
     async def distribution_loop(self):
 
         try:
