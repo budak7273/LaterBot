@@ -98,7 +98,7 @@ class ReminderDistribution(commands.Cog):
             color=discord.Color.dark_gold(),
         )
         embed.add_field(
-            name="Scheduled At", value=f"<t:{reminder_epoch_ms}:F>", inline=True
+            name="Scheduled for", value=f"<t:{reminder_epoch_ms}:F>", inline=True
         )
         embed.add_field(name=" ", value=f"<t:{reminder_epoch_ms}:R>", inline=True)
         embed.set_footer(text=f"ID: {reminder.id}")
