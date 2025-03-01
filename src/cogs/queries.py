@@ -8,6 +8,27 @@ from ezcord import log
 from db.models.reminder import Reminder
 
 
+def create_reminder_details_embed(reminder: Reminder) -> discord.Embed:
+    description = (
+        f"Reminder ID: {reminder.id}\n"
+        f"Remind At: <t:{int(reminder.remind_at.timestamp())}:F> (<t:{int(reminder.remind_at.timestamp())}:R>)\n"
+        f"Message: {reminder.target_message_jump_url}"
+    )
+    if reminder.delivered:
+        description += "\nStatus: `Delivered`"
+    elif reminder.errored:
+        description += "\nStatus: `Errored`"
+    else:
+        description += "\nStatus: `Awaiting Delivery`"
+
+    embed = discord.Embed(
+        title="Reminder Details",
+        description=description,
+        color=discord.Color.blue(),
+    )
+    return embed
+
+
 class ReminderSelect(discord.ui.Select):
     def __init__(self, reminders):
         options = [
@@ -26,14 +47,50 @@ class ReminderSelect(discord.ui.Select):
         reminder_id = int(self.values[0])
         reminder = await Reminder.get(id=reminder_id)
 
-        embed = discord.Embed(
-            title="Reminder Details",
-            description=f"Reminder ID: {reminder.id}\n"
-            f"Remind At: <t:{int(reminder.remind_at.timestamp())}:F>\n"
-            f"Message: [Jump to Message]({reminder.target_message_jump_url})",
-            color=discord.Color.blue(),
+        embed = create_reminder_details_embed(reminder)
+        view = ReminderActionView(reminder)
+        await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
+
+
+class LookupByIDButton(discord.ui.Button):
+    def __init__(self):
+        super().__init__(
+            label="Lookup by ID...",
+            style=discord.ButtonStyle.secondary,
+            custom_id="lookup_by_id_button",
         )
 
+    async def callback(self, interaction: discord.Interaction):
+        modal = EnterReminderIDModal()
+        await interaction.response.send_modal(modal)
+
+
+class EnterReminderIDModal(discord.ui.Modal):
+    def __init__(self):
+        super().__init__(title="Enter Reminder ID")
+        self.add_item(
+            discord.ui.InputText(
+                label="Reminder ID",
+                placeholder="Enter the reminder ID",
+                required=True,
+                custom_id="reminder_id",
+            )
+        )
+
+    async def callback(self, interaction: discord.Interaction):
+        reminder_id_input: discord.ui.InputText = self.children[0]
+        reminder_id = int(reminder_id_input.value)
+        user_id = interaction.user.id
+
+        reminder = await Reminder.get_or_none(id=reminder_id, discord_user_id=user_id)
+        if reminder is None:
+            await interaction.response.send_message(
+                f"No reminder found with ID {reminder_id} for your user.",
+                ephemeral=True,
+            )
+            return
+
+        embed = create_reminder_details_embed(reminder)
         view = ReminderActionView(reminder)
         await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
@@ -42,8 +99,8 @@ class ReminderActionView(discord.ui.View):
     def __init__(self, reminder):
         super().__init__()
         self.reminder = reminder
-        self.add_item(ReminderCancelButton(reminder))
         self.add_item(ReminderRescheduleButton(reminder))
+        self.add_item(ReminderCancelButton(reminder))
 
 
 class ReminderCancelButton(discord.ui.Button):
@@ -104,9 +161,21 @@ class RescheduleModal(discord.ui.Modal):
         )
 
 
+class ReminderSelectView(discord.ui.View):
+    def __init__(self, reminders):
+        super().__init__(timeout=None)
+        self.add_item(ReminderSelect(reminders))
+        self.add_item(LookupByIDButton())
+
+
 class Queries(commands.Cog):
     def __init__(self, bot: discord.Bot):
         self.bot = bot
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        self.bot.add_view(ReminderSelectView([]))
+        log.info("Registered ReminderSelectView persistent view")
 
     @commands.slash_command(
         name="check_reminders",
@@ -141,10 +210,9 @@ class Queries(commands.Cog):
             color=discord.Color.blue(),
         )
 
-        view = discord.ui.View()
-        view.add_item(ReminderSelect(reminders))
+        view = ReminderSelectView(reminders)
 
-        await ctx.respond(embed=embed, view=view, ephemeral=False)
+        await ctx.respond(embed=embed, view=view, ephemeral=True)
 
 
 def setup(bot: discord.Bot):
