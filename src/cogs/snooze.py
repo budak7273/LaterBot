@@ -57,9 +57,10 @@ class CustomSnoozeModal(discord.ui.Modal):
         )
         log.info(f"New reminder created with id {reminder.id}")
 
-        await self.original_interaction.edit_original_message(
+        await self.original_interaction.edit_original_response(
             content="", embed=embed, view=None
         )
+        await interaction.response.defer(invisible=True)
 
 
 class SnoozeSelect(discord.ui.Select):
@@ -100,7 +101,7 @@ class SnoozeSelect(discord.ui.Select):
             )
             log.info(f"New reminder created with id {reminder.id}")
 
-            await self.original_interaction.edit_original_message(
+            await self.original_interaction.edit_original_response(
                 content="", embed=embed, view=None
             )
 
@@ -146,7 +147,7 @@ class Snooze(commands.Cog):
         )
         log.info(f"New reminder created with id {reminder.id}")
 
-        await ctx.respond(embed=embed)
+        await ctx.interaction.response.send_message(embed=embed, ephemeral=True)
 
     @commands.message_command(
         name="Snooze...",
@@ -163,8 +164,10 @@ class Snooze(commands.Cog):
     async def snooze_message(
         self, ctx: discord.ApplicationContext, message: discord.Message
     ):
-        view = SnoozeView(message, ctx.interaction)
-        await ctx.respond("Choose a duration for the reminder:", view=view)
+        snooze_view = SnoozeView(message, ctx.interaction)
+        await ctx.interaction.response.send_message(
+            "Choose a duration for the reminder:", view=snooze_view, ephemeral=True
+        )
 
 
 def setup(bot: discord.Bot):

@@ -91,7 +91,6 @@ class ReminderDistribution(commands.Cog):
         #     return
 
         reminder_epoch_ms = int(reminder.remind_at.timestamp())
-
         embed = discord.Embed(
             title=":bell: Later™ is Now",
             description=f"You asked to be reminded about {reminder.target_message_jump_url}",
@@ -103,7 +102,7 @@ class ReminderDistribution(commands.Cog):
         embed.add_field(name=" ", value=f"<t:{reminder_epoch_ms}:R>", inline=True)
         embed.set_footer(text=f"ID: {reminder.id}")
 
-        await user_dms.send(embed=embed, view=ReminderView())
+        await user_dms.send(embed=embed, view=ReminderView(), silent=True)
         reminder.delivered = True
         await reminder.save()
 
