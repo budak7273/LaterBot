@@ -5,11 +5,10 @@ from ezcord import emb, log
 
 from db.models.reminder import Reminder
 
-
-class MyView(discord.ui.View):
-    @discord.ui.button(label="Click me!", style=discord.ButtonStyle.primary, emoji="😎")
-    async def button_callback(self, button, interaction):
-        await interaction.response.send_message("You clicked the button!")
+# class MyView(discord.ui.View):
+#     @discord.ui.button(label="Click me!", style=discord.ButtonStyle.primary, emoji="😎")
+#     async def button_callback(self, button, interaction):
+#         await interaction.response.send_message("You clicked the button!")
 
 
 class Test(commands.Cog):
@@ -35,12 +34,12 @@ class Test(commands.Cog):
     #     reminders = await Reminder.filter(discord_user_id=member.id)
     #     await emb.success(ctx, f"Result: {reminders}")
 
-    @commands.slash_command()
-    async def button_test(self, ctx: discord.ApplicationContext):
-        # await ctx.respond("Hey!")
-        await ctx.respond(
-            "This is a button!", view=MyView()
-        )  # Send a message with our View class that contains the button
+    # @commands.slash_command()
+    # async def button_test(self, ctx: discord.ApplicationContext):
+    #     # await ctx.respond("Hey!")
+    #     await ctx.respond(
+    #         "This is a button!", view=MyView()
+    #     )  # Send a message with our View class that contains the button
 
 
 def setup(bot):
