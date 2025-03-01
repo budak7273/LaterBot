@@ -8,11 +8,27 @@ from ezcord import log
 from db.models.reminder import Reminder
 
 
+def create_reminder_embed(
+    message: discord.Message, remind_at: datetime, footer_text: str
+) -> discord.Embed:
+    epoch_timestamp = int(remind_at.timestamp())
+    embed = discord.Embed(
+        title=":white_check_mark: Reminding you Later™",
+        description=f"Got it - you'll be reminded about {message.jump_url} <t:{epoch_timestamp}:R> (<t:{epoch_timestamp}:F>)!",
+        color=discord.Color.green(),
+    )
+    embed.set_footer(text=footer_text)
+    return embed
+
+
 class CustomSnoozeModal(discord.ui.Modal):
-    def __init__(self, message: discord.Message):
+    def __init__(
+        self, message: discord.Message, original_interaction: discord.Interaction
+    ):
         super().__init__(title="Custom Snooze Duration")
 
         self.message = message
+        self.original_interaction = original_interaction
 
         self.add_item(
             discord.ui.InputText(
@@ -30,13 +46,7 @@ class CustomSnoozeModal(discord.ui.Modal):
         current_utc_time = datetime.now(timezone.utc)
         remind_at = current_utc_time + timedelta(seconds=duration)
 
-        epoch_timestamp = int(remind_at.timestamp())
-        embed = discord.Embed(
-            title=":white_check_mark: Reminding you Later™",
-            description=f"Got it - you'll be reminded about {self.message.jump_url} <t:{epoch_timestamp}:R> (<t:{epoch_timestamp}:F>)!",
-            color=discord.Color.green(),
-        )
-        embed.set_footer(text="Snooze")
+        embed = create_reminder_embed(self.message, remind_at, "Snooze...")
 
         reminder = await Reminder.create(
             discord_user_id=interaction.user.id,
@@ -47,12 +57,17 @@ class CustomSnoozeModal(discord.ui.Modal):
         )
         log.info(f"New reminder created with id {reminder.id}")
 
-        await interaction.response.send_message(embed=embed)
+        await self.original_interaction.edit_original_message(
+            content="", embed=embed, view=None
+        )
 
 
 class SnoozeSelect(discord.ui.Select):
-    def __init__(self, message: discord.Message):
+    def __init__(
+        self, message: discord.Message, original_interaction: discord.Interaction
+    ):
         self.message = message
+        self.original_interaction = original_interaction
         options = [
             discord.SelectOption(label="1 hour", value="3600"),
             discord.SelectOption(label="6 hours", value="21600"),
@@ -67,20 +82,14 @@ class SnoozeSelect(discord.ui.Select):
 
     async def callback(self, interaction: discord.Interaction):
         if self.values[0] == "custom":
-            modal = CustomSnoozeModal(self.message)
+            modal = CustomSnoozeModal(self.message, self.original_interaction)
             await interaction.response.send_modal(modal)
         else:
             duration = int(self.values[0])
             current_utc_time = datetime.now(timezone.utc)
             remind_at = current_utc_time + timedelta(seconds=duration)
 
-            epoch_timestamp = int(remind_at.timestamp())
-            embed = discord.Embed(
-                title=":white_check_mark: Reminding you Later™",
-                description=f"Got it - you'll be reminded about {self.message.jump_url} <t:{epoch_timestamp}:R> (<t:{epoch_timestamp}:F>)!",
-                color=discord.Color.green(),
-            )
-            embed.set_footer(text="Snooze")
+            embed = create_reminder_embed(self.message, remind_at, "Snooze...")
 
             reminder = await Reminder.create(
                 discord_user_id=interaction.user.id,
@@ -91,13 +100,17 @@ class SnoozeSelect(discord.ui.Select):
             )
             log.info(f"New reminder created with id {reminder.id}")
 
-            await interaction.response.send_message(embed=embed)
+            await self.original_interaction.edit_original_message(
+                content="", embed=embed, view=None
+            )
 
 
 class SnoozeView(discord.ui.View):
-    def __init__(self, message: discord.Message):
+    def __init__(
+        self, message: discord.Message, original_interaction: discord.Interaction
+    ):
         super().__init__()
-        self.add_item(SnoozeSelect(message))
+        self.add_item(SnoozeSelect(message, original_interaction))
 
 
 class Snooze(commands.Cog):
@@ -110,13 +123,7 @@ class Snooze(commands.Cog):
         current_utc_time = datetime.now(timezone.utc)
         remind_at = current_utc_time + timedelta(seconds=5)
 
-        epoch_timestamp = int(remind_at.timestamp())
-        embed = discord.Embed(
-            title=":white_check_mark: Reminding you Later™",
-            description=f"Got it - you'll be reminded about {message.jump_url} <t:{epoch_timestamp}:R> (<t:{epoch_timestamp}:F>)!",
-            color=discord.Color.green(),
-        )
-        embed.set_footer(text="Quick Snooze")
+        embed = create_reminder_embed(message, remind_at, "Quick Snooze")
 
         reminder = await Reminder.create(
             discord_user_id=ctx.author.id,
@@ -161,7 +168,7 @@ class Snooze(commands.Cog):
     async def snooze_message(
         self, ctx: discord.ApplicationContext, message: discord.Message
     ):
-        view = SnoozeView(message)
+        view = SnoozeView(message, ctx.interaction)
         await ctx.respond("Choose a duration for the reminder:", view=view)
 
 
