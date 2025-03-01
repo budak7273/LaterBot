@@ -116,7 +116,7 @@ class ReminderManagement(commands.Cog):
         def __init__(self, reminders):
             options = [
                 discord.SelectOption(
-                    label=f"Reminder ID `{reminder.id}`", value=str(reminder.id)
+                    label=f"Reminder ID {reminder.id}", value=str(reminder.id)
                 )
                 for reminder in reminders
             ]

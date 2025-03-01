@@ -62,33 +62,53 @@ class CustomSnoozeModal(discord.ui.Modal):
         )
         await interaction.response.defer(invisible=True)
 
+    class SnoozeSelect(discord.ui.Select):
+        def __init__(
+            self, message: discord.Message, original_interaction: discord.Interaction
+        ):
+            self.message = message
+            self.original_interaction = original_interaction
+            options = [
+                discord.SelectOption(label="With next reminder", value="next_reminder"),
+                discord.SelectOption(label="Custom", value="custom"),
+                discord.SelectOption(label="1 hour", value="3600"),
+                discord.SelectOption(label="6 hours", value="21600"),
+                discord.SelectOption(label="12 hours", value="43200"),
+            ]
+            super().__init__(
+                placeholder="Choose a duration...",
+                options=options,
+                custom_id="duration_select",
+            )
 
-class SnoozeSelect(discord.ui.Select):
-    def __init__(
-        self, message: discord.Message, original_interaction: discord.Interaction
-    ):
-        self.message = message
-        self.original_interaction = original_interaction
-        options = [
-            discord.SelectOption(label="1 hour", value="3600"),
-            discord.SelectOption(label="6 hours", value="21600"),
-            discord.SelectOption(label="12 hours", value="43200"),
-            discord.SelectOption(label="Custom", value="custom"),
-        ]
-        super().__init__(
-            placeholder="Choose a duration...",
-            options=options,
-            custom_id="duration_select",
-        )
+        async def callback(self, interaction: discord.Interaction):
+            remind_at: datetime = None
+            if self.values[0] == "custom":
+                modal = CustomSnoozeModal(self.message, self.original_interaction)
+                await interaction.response.send_modal(modal)
+            elif self.values[0] == "next_reminder":
+                next_reminder = (
+                    await Reminder.filter(
+                        discord_user_id=interaction.user.id,
+                        errored=False,
+                        delivered=False,
+                    )
+                    .order_by("remind_at")
+                    .first()
+                )
 
-    async def callback(self, interaction: discord.Interaction):
-        if self.values[0] == "custom":
-            modal = CustomSnoozeModal(self.message, self.original_interaction)
-            await interaction.response.send_modal(modal)
-        else:
-            duration = int(self.values[0])
-            current_utc_time = datetime.now(timezone.utc)
-            remind_at = current_utc_time + timedelta(seconds=duration)
+                if next_reminder:
+                    remind_at = next_reminder.remind_at + timedelta(seconds=1)
+                else:
+                    await self.original_interaction.edit_original_response(
+                        content="No upcoming reminders found, please select a time manually."
+                        # , view=None
+                    )
+                    return
+            else:
+                duration = int(self.values[0])
+                current_utc_time = datetime.now(timezone.utc)
+                remind_at = current_utc_time + timedelta(seconds=duration)
 
             embed = create_reminder_embed(self.message, remind_at, "Snooze...")
 
@@ -111,7 +131,7 @@ class SnoozeView(discord.ui.View):
         self, message: discord.Message, original_interaction: discord.Interaction
     ):
         super().__init__()
-        self.add_item(SnoozeSelect(message, original_interaction))
+        self.add_item(CustomSnoozeModal.SnoozeSelect(message, original_interaction))
 
 
 class Snooze(commands.Cog):
