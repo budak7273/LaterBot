@@ -1,21 +1,27 @@
+import os
 import traceback
 
 import ezcord
 from cogwatch import Watcher
+from db.config import TORTOISE_ORM_FOR_BOT
 from dotenv import load_dotenv
 from ezcord import log
 from tortoise import Tortoise
-
 from utils.env import get_env
 
 load_dotenv()
+
+# Set the working directory to folder containing this file (makes it easier to run from anywhere)
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+print(f"Using working directory: {os.getcwd()}")
 
 
 class LaterBot(ezcord.Bot):
 
     async def close(self):
         """
-        Override to close db connections
+        Overridden to close db connections on exit
         """
         log.info("Closing database connections...")
         await Tortoise.close_connections()
@@ -24,8 +30,6 @@ class LaterBot(ezcord.Bot):
 
 
 bot = LaterBot(error_webhook_url=get_env("error_webhook_url"))
-
-print("Loading bot...")
 
 
 @bot.event
@@ -46,11 +50,7 @@ async def first_on_ready():
 
     log.info("Connecting to database...")
     try:
-        await Tortoise.init(
-            db_url="sqlite://laterbot-tortoise.sqlite3",
-            # TODO model auto-discovery?
-            modules={"models": ["db.models.reminder"]},
-        )
+        await Tortoise.init(config=TORTOISE_ORM_FOR_BOT)
     except Exception as e:
         log.error(f"Error connecting to database: {traceback.format_exc()}")
         exit(1)
@@ -58,12 +58,10 @@ async def first_on_ready():
 
 
 def startup():
+    print("Loading bot...")
+
     bot.load_cogs("cogs")
 
     bot.run(get_env("TOKEN"))
 
     print("Bot exited.")
-
-
-if __name__ == "__main__":
-    startup()

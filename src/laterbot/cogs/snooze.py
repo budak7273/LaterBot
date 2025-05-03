@@ -70,10 +70,13 @@ class CustomSnoozeModal(discord.ui.Modal):
             self.original_interaction = original_interaction
             options = [
                 discord.SelectOption(label="With next reminder", value="next_reminder"),
+                # discord.SelectOption(label="After work", value="after_work"),
                 discord.SelectOption(label="Custom", value="custom"),
                 discord.SelectOption(label="1 hour", value="3600"),
+                discord.SelectOption(label="3 hours", value="10800"),
                 discord.SelectOption(label="6 hours", value="21600"),
                 discord.SelectOption(label="12 hours", value="43200"),
+                discord.SelectOption(label="24 hours", value="86400"),
             ]
             super().__init__(
                 placeholder="Choose a duration...",
@@ -83,10 +86,13 @@ class CustomSnoozeModal(discord.ui.Modal):
 
         async def callback(self, interaction: discord.Interaction):
             remind_at: datetime = None
-            if self.values[0] == "custom":
+            value: int | any = self.values[0]
+            if value == "custom":
                 modal = CustomSnoozeModal(self.message, self.original_interaction)
                 await interaction.response.send_modal(modal)
-            elif self.values[0] == "next_reminder":
+            elif value == "after_work":
+                pass  # TODO
+            elif value == "next_reminder":
                 next_reminder = (
                     await Reminder.filter(
                         discord_user_id=interaction.user.id,
@@ -106,7 +112,7 @@ class CustomSnoozeModal(discord.ui.Modal):
                     )
                     return
             else:
-                duration = int(self.values[0])
+                duration = int(value)
                 current_utc_time = datetime.now(timezone.utc)
                 remind_at = current_utc_time + timedelta(seconds=duration)
 

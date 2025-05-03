@@ -2,11 +2,12 @@ import traceback
 from datetime import datetime, timezone
 
 import discord
+import tortoise
+import tortoise.exceptions
+from db.models.reminder import Reminder
 from discord import utils
 from discord.ext import commands, tasks
 from ezcord import log
-
-from db.models.reminder import Reminder
 
 
 class ReminderView(discord.ui.View):
@@ -130,12 +131,25 @@ class ReminderDistribution(commands.Cog):
 
             await self.distribute_reminder(to_deliver)
 
+        except tortoise.exceptions.OperationalError as e:
+            log.error("Database appears to be set up incorrectly")
+            raise e
         except Exception as e:
+            # TODO report these through bot error webhook or something
             log.error(
                 "Eating error in distribute_reminders loop (loop will continue to run)"
             )
             log.error(f"{e}\n=================================================")
             log.error(traceback.format_exc())
+            log.error("=================================================")
+
+    @distribution_loop.error
+    async def distribution_loop_error(self, error: Exception):
+        log.error(f"Fatal error in distribution loop causing bot shutdown: {error}")
+        log.error("=================================================")
+        log.error(traceback.format_exc())
+        log.error("=================================================")
+        exit()
 
     @distribution_loop.before_loop
     async def before_printer(self):
