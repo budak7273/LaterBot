@@ -1,11 +1,10 @@
 from datetime import datetime, timedelta, timezone
 
 import discord
+from db.models.reminder import Reminder
 from discord.enums import IntegrationType, InteractionContextType
 from discord.ext import commands
 from ezcord import log
-
-from db.models.reminder import Reminder
 
 
 def create_reminder_details_embed(reminder: Reminder) -> discord.Embed:
@@ -15,7 +14,9 @@ def create_reminder_details_embed(reminder: Reminder) -> discord.Embed:
         f"Remind At: <t:{timestamp}:F> (<t:{timestamp}:R>)\n"
         f"Message: {reminder.target_message_jump_url}"
     )
-    if reminder.delivered:
+    if reminder.delivered and reminder.errored:
+        description += "\nStatus: `Canceled by You`"
+    elif reminder.delivered:
         description += "\nStatus: `Delivered`"
     elif reminder.errored:
         description += "\nStatus: `Errored`"
@@ -80,10 +81,12 @@ class ReminderManagement(commands.Cog):
                     ephemeral=True,
                 )
                 return
+            self.reminder.delivered = True
             self.reminder.errored = True
             await self.reminder.save()
             await interaction.response.send_message(
-                f"Reminder ID `{self.reminder.id}` has been canceled.", ephemeral=True
+                f"Reminder ID `{self.reminder.id}` for {self.reminder.target_message_jump_url} has been canceled.",
+                ephemeral=False,
             )
 
     class ReminderRescheduleButton(discord.ui.Button):
