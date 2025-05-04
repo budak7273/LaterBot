@@ -60,6 +60,9 @@ To make a new migration, use `aerich migrate --name migration_name_here` from th
 
 Find more info on Aerich with Tortoise here: <https://tortoise.github.io/migration.html>
 
+Apparently [the Aerich dev doesn't want to officially support sqlite](https://github.com/tortoise/aerich/issues/40#issuecomment-690819632) so you may need to write a bunch of migrations manually.
+To make an empty migration file to edit manually, use `aerich migrate --name migration_name_here --empty`.
+
 ## Future
 
 - Docker container
