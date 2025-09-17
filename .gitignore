@@ -1,7 +1,5 @@
 # cspell:disable
 
-RobWorkingDir/
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -135,5 +133,9 @@ token.txt
 # SQLite database files
 *.db
 *.sqlite3*
+
+# Project specific
+RobWorkingDir/
+docker-compose-prod.yml
 
 # Organize below entries!

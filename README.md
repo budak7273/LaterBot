@@ -25,11 +25,12 @@ To run the bot without the container, follow the Development instructions below.
     - Logging and error handling
   - [cogwatch](https://github.com/robertwayne/cogwatch/) to reload cogs at runtime
     - Note: changes to application command names/syntax still requires a full bot restart
-- Sqlite (probably switch to postgres later)
+- Sqlite (maybe switch to postgres later)
   - Tortoise ORM
 
 ## Development
 
+- Create a new [Discord application](https://discord.com/developers/applications) to get a token.
 - Clone the repo
 - Install/select the correct python version using pyenv
   - The repo's `.python-version` file indicates the version to use
@@ -39,8 +40,8 @@ To run the bot without the container, follow the Development instructions below.
 - Remember to activate python venv (`.\venv\Scripts\Activate.ps1`)
 - Install requirements `pip install -r .\requirements.txt`
   - NOTE: Until pycord fixes their stuff, `audioop-lts; python_version>='3.13'` is needed. The requirements file should take care of this for you.
-- Set up the `.env` file with a bot token.
-- For first time db setup, use `python .\db-init.py` in the `/src/` directory. TODO aerich
+- Set up the `.env` file based on `.env.example`.
+- For first time db setup, use `python .\src\db-init.py` from the project root directory. TODO bot can do this on its own now. TODO aerich?
 - When running, use `python .\src\laterbot` from the project root directory.
 - Linter rule help <https://pylint.readthedocs.io/en/latest/user_guide/messages/message_control.html>
 

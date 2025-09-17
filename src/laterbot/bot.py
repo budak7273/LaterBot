@@ -51,8 +51,11 @@ async def first_on_ready():
     log.info("Connecting to database...")
     try:
         await Tortoise.init(config=TORTOISE_ORM_FOR_BOT)
-    except Exception as e:
+        # TODO safe to allow bot to automatically set up its own db if missing? done for container
+        await Tortoise.generate_schemas(safe=True)
+    except Exception:
         log.error(f"Error connecting to database: {traceback.format_exc()}")
+        # raising exception doesn't actually exit it, it keeps going and prints other stuff (=> misleading error)
         exit(1)
     log.info("Database connection established.")
 

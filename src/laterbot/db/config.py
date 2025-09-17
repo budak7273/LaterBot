@@ -1,8 +1,9 @@
 from copy import deepcopy
+from typing import Any
 
-TORTOISE_ORM = {
+TORTOISE_ORM: dict[str, Any] = {
     "connections": {
-        "default": "sqlite://laterbot-tortoise.sqlite3",
+        "default": "sqlite://data/laterbot-tortoise.sqlite3",
     },
     "apps": {
         "models": {
@@ -16,8 +17,8 @@ TORTOISE_ORM = {
     },
 }
 
-# Make aerich generate the database in the project root, but the bot has to look ip from its src folder to find it
+# The bot has to look up-and-out from its src folder to find sqlite file
 TORTOISE_ORM_FOR_BOT = deepcopy(TORTOISE_ORM)
 TORTOISE_ORM_FOR_BOT["connections"][
     "default"
-] = "sqlite://../../laterbot-tortoise.sqlite3"
+] = "sqlite://../../data/laterbot-tortoise.sqlite3"

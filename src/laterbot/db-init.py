@@ -1,15 +1,15 @@
+from db.config import TORTOISE_ORM
 from tortoise import Tortoise, run_async
 
-from db.config import TORTOISE_ORM
 
-
+# TODO keep this around? bot can now create its own db when missing (done for container)
 async def init():
     """
     Run this to set up a new database file from nothing.
     """
     await Tortoise.init(config=TORTOISE_ORM)
     # Generate the schema
-    await Tortoise.generate_schemas()
+    await Tortoise.generate_schemas(safe=True)
     print("DB setup complete.")
 
 

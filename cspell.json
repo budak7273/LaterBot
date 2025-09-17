@@ -5,8 +5,11 @@
         "aerich",
         "audioop",
         "Ezcord",
+        "libpq",
         "pycord",
-        "pyenv"
+        "pyenv",
+        "pyproject",
+        "PYTHONUNBUFFERED"
     ],
     "ignoreWords": [],
     "ignorePaths": [],
