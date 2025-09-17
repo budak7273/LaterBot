@@ -17,7 +17,7 @@ class User(models.Model):
     timezone_offset = fields.IntField(default=0)
     """User's timezone offset from UTC in minutes"""
 
-    work_end_time = fields.TimeDeltaField(default=0)
+    work_end_time = fields.TimeDeltaField(default=datetime.timedelta(seconds=0))
     """Time of day when the user's work ends. Must combine with timezone_offset for a meaningful timestamp."""
 
     def __str__(self):
