@@ -137,5 +137,6 @@ token.txt
 # Project specific
 RobWorkingDir/
 docker-compose-prod.yml
+docker-compose-localtest.yml
 
 # Organize below entries!

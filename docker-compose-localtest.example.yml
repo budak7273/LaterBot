@@ -1,0 +1,9 @@
+services:
+  laterbot:
+    extends:
+      file: docker-compose-dev.yml
+      service: laterbot
+    environment:
+      # See `.env.example` for more info on what these should be
+      TOKEN: "token"
+      error_webhook_url: "https://discord.com/api/webhooks/url/goeshere"

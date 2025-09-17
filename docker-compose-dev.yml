@@ -1,0 +1,9 @@
+version: "3.8"
+services:
+  laterbot:
+    image: laterbot:latest
+    build: .
+    container_name: laterbot
+    volumes:
+      # Host sqlite file bind-mounted into container /data so it can be swapped externally
+      - ./data/:/data/

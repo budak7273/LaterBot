@@ -1,6 +1,7 @@
 # Later™
 
 Discord bot that lets you snooze specific messages, reminding you about them later.
+Still in development, don't expect totally safe migrations if you host it yourself.
 
 ## Usage
 
@@ -10,9 +11,20 @@ All bot interactions are performed via the discord Apps context menu or via slas
 
 ## Hosting
 
-If you want to host the bot yourself, use the docker container: TODO
+The easiest way to host the bot is using the provided Docker container and compose file.
+If you want to run the bot without the container, follow the [Development instructions](#development).
 
-To run the bot without the container, follow the Development instructions below.
+The bot uses a sqlite database to store persistent info.
+It mounts a volume to persist this and exposes the volume to the host for maintenance if necessary.
+
+To specify environment variables, either make a copy of `docker-compose-prod.example.yml` and edit it
+or specify them through your hosting system's preferred approach.
+
+The included `docker-compose.yml` mounts the sqlite DB from `./data/laterbot-tortoise.sqlite3` into the container at `/data/laterbot-tortoise.sqlite3`
+
+```powershell
+docker compose -f .\docker-compose-localtest.yml up --detach
+```
 
 ## Stack
 
@@ -44,6 +56,12 @@ To run the bot without the container, follow the Development instructions below.
 - For first time db setup, use `python .\src\db-init.py` from the project root directory. TODO bot can do this on its own now. TODO aerich?
 - When running, use `python .\src\laterbot` from the project root directory.
 - Linter rule help <https://pylint.readthedocs.io/en/latest/user_guide/messages/message_control.html>
+
+To locally test the docker container, create a copy of `docker-compose-localtest.example.yml` to fill in the env vars, then run:
+
+```powershell
+docker compose -f .\docker-compose-localtest.yml up --build
+```
 
 ### Migrations
 
