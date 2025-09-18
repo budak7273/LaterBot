@@ -34,8 +34,8 @@ and use `docker-compose-prod.example.yml` as the stack.
 You will have to edit the bind source to be a directory somewhere in your Unraid,
 such as `/mnt/user/appdata/laterbot/` to be near where other containers put their files.
 You will have to use the Unraid terminal to change permissions in that folder to allow writing.
-One unsafe way to do that is to run `chmod 777` from inside the data folder.
-You could also run the container as root via `user: "0:0"` in the compose file, which is also unsafe.
+One unsafe way to do that is to run `chmod 777 .` from inside the data folder.
+You could also run the container as root via `user: "0:0"` in the compose file, which is also unsafe, and doesn't let you edit it via a share.
 PR if you find a safe way or have more info.
 
 ## Stack
