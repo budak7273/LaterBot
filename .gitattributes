@@ -1,5 +1,7 @@
 # Treat all files as text
 * text=auto
 
+*.png binary
+
 # Ensure Unix-style line endings in the repository
 * text eol=lf
