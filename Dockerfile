@@ -1,4 +1,6 @@
-FROM python:3.13.1-slim as runner
+FROM python:3.13.1-slim AS runner
+
+LABEL org.opencontainers.image.source=https://github.com/budak7273/LaterBot
 
 # Create app user and working directory
 RUN useradd --create-home appuser
@@ -13,9 +15,6 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
-# Copy project requirements
-COPY pyproject.toml requirements.txt ./
-
 # Mount volume /data to hold the sqlite database file
 VOLUME ["/data"]
 # Make directory inside app/ to be symlinked to volume later
@@ -24,10 +23,13 @@ RUN mkdir /home/appuser/app/data/
 # Instantly print any standard streams (container logs)
 ENV PYTHONUNBUFFERED=1
 
+# Copy project requirements
+COPY pyproject.toml requirements.txt ./
+
 # Install python deps
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy project files
+# Copy project source files. Do this after installing deps so it doesn't need to reinstall on every source file change.
 COPY src ./src
 COPY migrations ./migrations
 

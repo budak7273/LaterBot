@@ -2,9 +2,6 @@
 # based on https://github.com/AssetAtlasTracker/AssetAtlas/blob/main/docker/build-and-push.sh
 set -e # Stop execution if any script line returns not `true`
 
-# Navigate to the project root directory
-cd "$(dirname "$0")/.."
-
 # Configuration
 GITHUB_ORG=${1:-}
 REPOSITORY_NAME=${2:-LaterBot}
@@ -26,8 +23,10 @@ REPOSITORY_NAME=$(echo "$REPOSITORY_NAME" | tr '[:upper:]' '[:lower:]')
 if [ -z "$GITHUB_TOKEN" ]; then
   echo "No GITHUB_TOKEN environment variable found."
   
-  echo "  1. Please enter your GitHub Personal Access Token with package write perms."
+  echo "  1. Please enter your GitHub Personal Access Token with permission write:packages"
   echo "  2. Also make sure docker is running."
+  echo "  https://github.com/settings/tokens/new"
+  echo "  https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic"
   echo -n "Github PAT: "
   read -r GITHUB_TOKEN
   
@@ -43,7 +42,7 @@ fi
 
 # Set image name, for org repo, format is ghcr.io/org-name/repo-name
 STANDARD_IMAGE="ghcr.io/$GITHUB_ORG/$REPOSITORY_NAME:$VERSION"
-DOCKERFILE_PATH="Dockerfile"
+DOCKERFILE_PATH="./Dockerfile"
 
 # Check if buildx is installed
 if ! docker buildx version > /dev/null 2>&1; then

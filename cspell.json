@@ -10,7 +10,8 @@
         "pycord",
         "pyenv",
         "pyproject",
-        "PYTHONUNBUFFERED"
+        "PYTHONUNBUFFERED",
+        "Unraid"
     ],
     "ignoreWords": [],
     "ignorePaths": [],

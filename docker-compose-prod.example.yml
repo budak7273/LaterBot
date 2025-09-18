@@ -1,1 +1,17 @@
-# TODO need to know ghcr path
+version: "3.8"
+
+services:
+  laterbot:
+    image: ghcr.io/budak7273/laterbot:latest
+    pull_policy: always
+    volumes:
+      # Host sqlite file bind-mounted into container /data so it can be swapped externally
+      - type: bind
+        # Configure me! Set `source` to where you want the data to be stored on the host machine!
+        # Unraid example: /mnt/cache/appdata/laterbot/
+        source: ./data/
+        target: /data/
+    environment:
+      # Configure me! See `.env.example` for more info on what these should be
+      TOKEN: ""
+      error_webhook_url: ""
