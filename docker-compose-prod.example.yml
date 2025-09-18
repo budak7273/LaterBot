@@ -8,10 +8,12 @@ services:
       # Host sqlite file bind-mounted into container /data so it can be swapped externally
       - type: bind
         # Configure me! Set `source` to where you want the data to be stored on the host machine!
-        # Unraid example: /mnt/cache/appdata/laterbot/
+        # Unraid example: /mnt/user/appdata/laterbot/
+        # You may need to change permissions on the Unraid side to allow the container to write
         source: ./data/
         target: /data/
     environment:
       # Configure me! See `.env.example` for more info on what these should be
       TOKEN: ""
       error_webhook_url: ""
+    # user: "0:0" # Uncomment to run as root (folder perms lazy testing workaround). Format: uid:gid

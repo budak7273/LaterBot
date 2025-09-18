@@ -26,6 +26,18 @@ The included `docker-compose.yml` mounts the sqlite DB from `./data/laterbot-tor
 docker compose -f .\docker-compose-localtest.yml up --detach
 ```
 
+### Unraid
+
+Deploying this on an Unraid server is relatively straightforward.
+Install the [Docker Compose Manager](https://forums.unraid.net/topic/114415-plugin-docker-compose-manager/) plugin
+and use `docker-compose-prod.example.yml` as the stack.
+You will have to edit the bind source to be a directory somewhere in your Unraid,
+such as `/mnt/user/appdata/laterbot/` to be near where other containers put their files.
+You will have to use the Unraid terminal to change permissions in that folder to allow writing.
+One unsafe way to do that is to run `chmod 777` from inside the data folder.
+You could also run the container as root via `user: "0:0"` in the compose file, which is also unsafe.
+PR if you find a safe way or have more info.
+
 ## Stack
 
 - Developed on Windows in VSCode
@@ -84,7 +96,6 @@ To make an empty migration file to edit manually, use `aerich migrate --name mig
 
 ## Future
 
-- Docker container
 - CI/CD pipeline
 - Intelligent reminder distribution loop (instead of a fixed interval, wait until the next reminder is due, unless one is scheduled sooner)
 - Per-user "remind at" preset times
