@@ -80,6 +80,7 @@ class CustomSnoozeModal(discord.ui.Modal):
                 discord.SelectOption(label="1 hour", value="3600"),
                 discord.SelectOption(label="3 hours", value="10800"),
                 discord.SelectOption(label="6 hours", value="21600"),
+                discord.SelectOption(label="8 hours", value="28800"),
                 discord.SelectOption(label="12 hours", value="43200"),
                 discord.SelectOption(label="24 hours", value="86400"),
             ]
