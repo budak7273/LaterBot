@@ -5,7 +5,7 @@ Still in development, don't expect totally safe migrations if you host it yourse
 
 ## Usage
 
-Add the bot to your server with this link: TODO
+Add the bot to your server with this link: (TODO, contact Robb directly or host it yourself)
 
 All bot interactions are performed via the discord Apps context menu or via slash commands in DMs with the bot user.
 
@@ -65,8 +65,8 @@ PR if you find a safe way or have more info.
 - Install requirements `pip install -r .\requirements.txt`
   - NOTE: Until pycord fixes their stuff, `audioop-lts; python_version>='3.13'` is needed. The requirements file should take care of this for you.
 - Set up the `.env` file based on `.env.example`.
-- For first time db setup, use `python .\src\db-init.py` from the project root directory. TODO bot can do this on its own now. TODO aerich?
-- When running, use `python .\src\laterbot` from the project root directory.
+- The bot will automatically create an empty database (`./data/laterbot-tortoise.sqlite3`) if it doesn't find one at startup
+- To run it for local testing, use `python .\src\laterbot` from the project root directory, or use the VSCode task
 - Linter rule help <https://pylint.readthedocs.io/en/latest/user_guide/messages/message_control.html>
 
 To locally test the docker container, create a copy of `docker-compose-localtest.example.yml` to fill in the env vars, then run:
@@ -77,7 +77,7 @@ docker compose -f .\docker-compose-localtest.yml up --build
 
 ### Migrations
 
-Migrations must be run after adding or changing datbase models.
+Migrations must be run after adding or changing database models.
 
 [Aerich](https://github.com/tortoise/aerich) is used for migrations and is installed by pip.
 
