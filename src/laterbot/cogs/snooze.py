@@ -1,8 +1,10 @@
 from datetime import datetime, timedelta, timezone
 
+import dateparser
 import discord
 from discord.enums import IntegrationType, InteractionContextType
 from discord.ext import commands
+from discord.ui import View
 from ezcord import log
 
 from db.models.reminder import Reminder
@@ -32,8 +34,8 @@ class CustomSnoozeModal(discord.ui.Modal):
 
         self.add_item(
             discord.ui.InputText(
-                label="Custom Duration (seconds)",
-                placeholder="Enter custom duration in seconds",
+                label="Custom Duration",
+                placeholder="e.g., '2 hours', 'tomorrow at 3pm', '30 minutes', 'in 1 day' (TODO sender user timezone handling)",
                 required=True,
                 custom_id="custom_duration",
             )
@@ -46,10 +48,52 @@ class CustomSnoozeModal(discord.ui.Modal):
                 "Error, duration must be specified", ephemeral=True
             )
             return
-        duration = int(custom_duration_input.value)
 
         current_utc_time = datetime.now(timezone.utc)
-        remind_at = current_utc_time + timedelta(seconds=duration)
+        user_input = custom_duration_input.value.strip()
+
+        # TODO times like '2 hours' are interpreted as 2hrs ago (undesired)
+        try:
+            # Try to parse as natural language using dateparser
+            parsed_datetime = dateparser.parse(
+                user_input, settings={"RETURN_AS_TIMEZONE_AWARE": True}
+            )
+
+            print(
+                f"Parsed datetime: {parsed_datetime} ({repr(parsed_datetime)}) from user input: '{user_input}'"
+            )
+
+            if parsed_datetime is None:
+                await interaction.response.send_message(
+                    f"Could not parse '`{user_input}`'. Please try formats like '2 hours', 'tomorrow at 3pm', or '30 minutes'.",
+                    ephemeral=True,
+                )
+                return
+
+            # Does this case ever happen?
+            if parsed_datetime.tzinfo is None:
+                await interaction.response.send_message(
+                    f"Warning: could not detect timezone in '`{user_input}`' Assigning UTC.",
+                    ephemeral=True,
+                )
+                parsed_datetime = parsed_datetime.replace(tzinfo=timezone.utc)
+
+            if parsed_datetime <= current_utc_time:
+                timestamp = int(parsed_datetime.timestamp())
+                await interaction.response.send_message(
+                    f"The time must be in the future. <t:{timestamp}:S> is in the past (request placed at <t:{int(current_utc_time.timestamp())}:S>). Please specify a future time.",
+                    ephemeral=True,
+                )
+                return
+
+            remind_at = parsed_datetime
+
+        except Exception as e:
+            log.error(f"Error parsing duration: {e}")
+            await interaction.response.send_message(
+                f"Error parsing duration: {str(e)}", ephemeral=True
+            )
+            return
 
         embed = create_reminder_embed(self.message, remind_at, "Snooze...")
 
