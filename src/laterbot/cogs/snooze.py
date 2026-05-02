@@ -67,7 +67,8 @@ class CustomSnoozeModal(discord.ui.Modal):
         )
         await interaction.response.defer(invisible=True)
 
-    class SnoozeSelect(discord.ui.Select):
+    # TODO is this the correct type arg?
+    class SnoozeSelect(discord.ui.Select[View]):
         def __init__(
             self, message: discord.Message, original_interaction: discord.Interaction
         ):
@@ -91,14 +92,18 @@ class CustomSnoozeModal(discord.ui.Modal):
             )
 
         async def callback(self, interaction: discord.Interaction):
-            remind_at: datetime = None
-            value: int | any = self.values[0]
+            remind_at: datetime
+            value = str(self.values[0])
             if value == "custom":
                 modal = CustomSnoozeModal(self.message, self.original_interaction)
                 await interaction.response.send_modal(modal)
                 return  # Further handling happens in the modal callback
             elif value == "after_work":
-                pass  # TODO
+                await interaction.response.send_message(
+                    "TODO unimplemented",
+                    ephemeral=True,
+                )
+                return
             elif value == "next_reminder":
                 next_reminder = (
                     await Reminder.filter(
