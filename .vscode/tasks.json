@@ -6,7 +6,7 @@
         {
             "label": "Update requirements.txt",
             "type": "shell",
-            "command": "pip freeze > requirements.txt",
+            "command": "(./venv/Scripts/pip.exe freeze) > requirements.txt",
             "problemMatcher": []
         }
     ]
