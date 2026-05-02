@@ -41,6 +41,11 @@ class CustomSnoozeModal(discord.ui.Modal):
 
     async def callback(self, interaction: discord.Interaction):
         custom_duration_input: discord.ui.InputText = self.children[0]
+        if custom_duration_input.value is None:
+            await interaction.response.send_message(
+                "Error, duration must be specified", ephemeral=True
+            )
+            return
         duration = int(custom_duration_input.value)
 
         current_utc_time = datetime.now(timezone.utc)
