@@ -95,6 +95,7 @@ class CustomSnoozeModal(discord.ui.Modal):
             if value == "custom":
                 modal = CustomSnoozeModal(self.message, self.original_interaction)
                 await interaction.response.send_modal(modal)
+                return  # Further handling happens in the modal callback
             elif value == "after_work":
                 pass  # TODO
             elif value == "next_reminder":
