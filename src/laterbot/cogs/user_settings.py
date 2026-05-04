@@ -24,7 +24,7 @@ class UserSettings(commands.Cog):
         user, _ = await User.get_or_create_from_discord_user_id(discord_user_id=user_id)
 
         embed = discord.Embed(
-            title=f"User Details",
+            title=f"User Details (WIP)",
             description=user,
             color=discord.Color.blue(),
         )

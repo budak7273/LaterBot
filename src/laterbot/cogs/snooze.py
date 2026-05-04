@@ -7,7 +7,7 @@ from discord.ui import View
 from ezcord import log
 
 from db.models.reminder import Reminder
-from cogs.reminder_ui import CustomSnoozeModal, create_reminder_embed
+from cogs.reminder_ui import ReminderUi, create_reminder_embed
 
 
 # TODO is this the correct type arg?
@@ -40,7 +40,7 @@ class SnoozeSelect(discord.ui.Select[View]):
         remind_at: datetime
         value = str(self.values[0])
         if value == "custom":
-            modal = CustomSnoozeModal(self.message, self.original_interaction)
+            modal = ReminderUi.CustomSnoozeModal(self.message, self.original_interaction)
             await interaction.response.send_modal(modal)
             return  # Further handling happens in the modal callback
         elif value == "after_work":

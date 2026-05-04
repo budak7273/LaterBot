@@ -7,7 +7,7 @@ from discord.enums import IntegrationType, InteractionContextType
 from discord.ext import commands
 from ezcord import log
 
-from cogs.reminder_ui import ReminderActionView
+from cogs.reminder_ui import ReminderUi
 
 
 def create_reminder_details_embed(reminder: Reminder) -> discord.Embed:
@@ -56,7 +56,7 @@ class ReminderManagement(commands.Cog):
             reminder = await Reminder.get(id=reminder_id)
 
             embed = create_reminder_details_embed(reminder)
-            view = ReminderActionView(reminder)
+            view = ReminderUi.ReminderActionView(reminder)
             await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
     class ReminderSelectView(discord.ui.View):
@@ -93,7 +93,7 @@ class ReminderManagement(commands.Cog):
                 return
 
             embed = create_reminder_details_embed(reminder)
-            view = ReminderActionView(reminder)
+            view = ReminderUi.ReminderActionView(reminder)
             await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
     class LookupByIDButton(discord.ui.Button):

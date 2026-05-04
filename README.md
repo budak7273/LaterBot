@@ -49,6 +49,7 @@ PR if you find a safe way or have more info.
     - Logging and error handling
   - [cogwatch](https://github.com/robertwayne/cogwatch/) to reload cogs at runtime
     - Note: changes to application command names/syntax still requires a full bot restart
+    - Note: changes to modals, views, etc. seem to require full bot restart even if made class members of a cog
 - Sqlite (maybe switch to postgres later)
   - Tortoise ORM
 
@@ -96,8 +97,10 @@ To make an empty migration file to edit manually, use `aerich migrate --name mig
 
 ## Future
 
-- CI/CD pipeline
+- CI/CD pipeline (for now, see [NOTES.md](NOTES.md) for manual publish instructions)
 - Intelligent reminder distribution loop (instead of a fixed interval, wait until the next reminder is due, unless one is scheduled sooner)
 - Per-user "remind at" preset times
+- User timezone awareness for natural language processing time inputs (user settings and/or ask in a second modal field)
+- Development time hot reloading for Views, Modals, Buttons
 - Auto db cleanup of delivered reminders
 - More robust error handling
