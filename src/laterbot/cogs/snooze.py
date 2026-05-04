@@ -62,8 +62,8 @@ class SnoozeSelect(discord.ui.Select[View]):
             else:
                 await self.original_interaction.edit_original_response(
                     content="No upcoming reminders found, please select a time manually."
-                    # , view=None
                 )
+                await interaction.response.defer()
                 return
         else:
             duration = int(value)
