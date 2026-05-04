@@ -23,7 +23,7 @@ def create_reminder_embed(
         description=f"Got it - you'll be reminded about {message.jump_url} <t:{epoch_timestamp}:R> (<t:{epoch_timestamp}:F>)!",
         color=discord.Color.green(),
     )
-    embed.set_footer(text=footer_text)
+    embed.set_footer(text=f"{footer_text} | ID: {reminder.id}")
 
     view = ReminderActionView(reminder)
 
@@ -177,7 +177,6 @@ class ReminderCancelButton(discord.ui.Button):
             return
 
         self.reminder.delivered = True
-        self.reminder.errored = True
         await self.reminder.save()
         await interaction.response.send_message(
             f"Reminder ID `{self.reminder.id}` for {self.reminder.target_message_jump_url} has been canceled.",
