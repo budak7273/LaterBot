@@ -5,19 +5,17 @@ import discord
 import tortoise
 import tortoise.exceptions
 from db.models.reminder import Reminder
-from discord import utils
+from discord import PartialEmoji, utils
 from discord.ext import commands, tasks
 from ezcord import log
 
 
 class ReminderView(discord.ui.View):
     @discord.ui.button(label="Re-snooze", style=discord.ButtonStyle.gray, emoji="🔃")
-    async def re_snooze_button(
-        self, button: discord.Button, interaction: discord.Interaction
-    ):
+    async def re_snooze_button(self, button: discord.Button, interaction: discord.Interaction):
         button.disabled = True
         button.label = "Re-snoozed"
-        button.emoji = "🔕"
+        button.emoji = PartialEmoji(name="🔕")
 
         # log.info(f"Interaction data: {interaction.data}")
 
@@ -45,11 +43,10 @@ class ReminderDistribution(commands.Cog):
         """
         Distribute a single reminder
         """
-        user: discord.Member = await utils.get_or_fetch(
-            self.bot, "user", reminder.discord_user_id
-        )
-        log.info(f"User is {user}")
-        if user is None:
+        user: discord.Member
+        try:
+            user = await utils.get_or_fetch(self.bot, "user", reminder.discord_user_id)
+        except:
             log.warning("User not found? Marking entry errored")
             reminder.errored = True
             await reminder.save()
@@ -59,12 +56,12 @@ class ReminderDistribution(commands.Cog):
         if user_dms is None:
             log.info(f"User DMs for {user} not found, creating new DM channel")
             user_dms = await user.create_dm()
-        log.info(str(user.dm_channel))
         if user_dms is None:
-            log.warning("User DMs not found? Marking entry errored")
+            log.warning(f"User {user} DMs not found? Marking entry errored")
             reminder.errored = True
             await reminder.save()
             return
+        log.info(f"Using channel: {user.dm_channel} for user {user}")
 
         # Bot doesn't have access to channels/messages it isn't a part of
         # channel: discord.TextChannel = await utils.get_or_fetch(
@@ -97,9 +94,7 @@ class ReminderDistribution(commands.Cog):
             description=f"You asked to be reminded about {reminder.target_message_jump_url}",
             color=discord.Color.dark_gold(),
         )
-        embed.add_field(
-            name="Scheduled for", value=f"<t:{reminder_epoch_ms}:F>", inline=True
-        )
+        embed.add_field(name="Scheduled for", value=f"<t:{reminder_epoch_ms}:F>", inline=True)
         embed.add_field(name=" ", value=f"<t:{reminder_epoch_ms}:R>", inline=True)
         embed.set_footer(text=f"ID: {reminder.id}")
 
@@ -109,13 +104,10 @@ class ReminderDistribution(commands.Cog):
 
     @tasks.loop(seconds=3.0)
     async def distribution_loop(self):
-
         try:
             now = datetime.now(timezone.utc)
             total_reminders = await Reminder.all().count()
-            pending_delivery = Reminder.filter(
-                remind_at__lte=now, errored=False, delivered=False
-            ).order_by("remind_at")
+            pending_delivery = Reminder.filter(remind_at__lte=now, errored=False, delivered=False).order_by("remind_at")
             total_reminders_pending = await pending_delivery.count()
 
             to_deliver = await pending_delivery.first()
@@ -125,9 +117,7 @@ class ReminderDistribution(commands.Cog):
                     f"No reminders to distribute yet ({total_reminders_pending} pending, {total_reminders} total in db)"
                 )
                 return
-            log.info(
-                f"Delivering reminder {to_deliver} (of {total_reminders_pending} pending)"
-            )
+            log.info(f"Delivering reminder {to_deliver} (of {total_reminders_pending} pending)")
 
             await self.distribute_reminder(to_deliver)
 
@@ -136,14 +126,12 @@ class ReminderDistribution(commands.Cog):
             raise e
         except Exception as e:
             # TODO report these through bot error webhook or something
-            log.error(
-                "Eating error in distribute_reminders loop (loop will continue to run)"
-            )
+            log.error("Eating error in distribute_reminders loop (loop will continue to run)")
             log.error(f"{e}\n=================================================")
             log.error(traceback.format_exc())
             log.error("=================================================")
 
-    @distribution_loop.error
+    @distribution_loop.error  # pyright: ignore[reportArgumentType] It can handle exceptions totally fine idk why this is a type error
     async def distribution_loop_error(self, error: Exception):
         log.error(f"Fatal error in distribution loop causing bot shutdown: {error}")
         log.error("=================================================")

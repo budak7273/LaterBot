@@ -2,3 +2,9 @@
 tortoise_orm = "db.config.TORTOISE_ORM"
 location = "./migrations"
 src_folder = "./src/laterbot"
+
+[tool.pyright]
+reportMissingTypeStubs = "warning"
+
+[tool.black]
+line-length = 120

@@ -51,7 +51,6 @@ async def first_on_ready():
     log.info("Connecting to database...")
     try:
         await Tortoise.init(config=TORTOISE_ORM_FOR_BOT)
-        # TODO safe to allow bot to automatically set up its own db if missing? done for container
         await Tortoise.generate_schemas(safe=True)
     except Exception:
         log.error(f"Error connecting to database: {traceback.format_exc()}")
@@ -65,6 +64,6 @@ def startup():
 
     bot.load_cogs("cogs")
 
-    bot.run(get_env("TOKEN"))
+    bot.run(token=get_env("TOKEN"))
 
     print("Bot exited.")

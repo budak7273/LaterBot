@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from typing import Tuple
 
 import dateparser
 import discord
@@ -8,11 +9,15 @@ from discord.ui import View
 from ezcord import log
 
 from db.models.reminder import Reminder
+from cogs.reminder_ui import ReminderActionView
 
 
 def create_reminder_embed(
-    message: discord.Message, remind_at: datetime, footer_text: str
-) -> discord.Embed:
+    message: discord.Message,
+    remind_at: datetime,
+    footer_text: str,
+    reminder: Reminder,
+) -> Tuple[discord.Embed, View]:
     epoch_timestamp = int(remind_at.timestamp())
     embed = discord.Embed(
         title=":white_check_mark: Reminding you Later™",
@@ -20,13 +25,14 @@ def create_reminder_embed(
         color=discord.Color.green(),
     )
     embed.set_footer(text=footer_text)
-    return embed
+
+    view = ReminderActionView(reminder)
+
+    return embed, view
 
 
 class CustomSnoozeModal(discord.ui.Modal):
-    def __init__(
-        self, message: discord.Message, original_interaction: discord.Interaction
-    ):
+    def __init__(self, message: discord.Message, original_interaction: discord.Interaction):
         super().__init__(title="Custom Snooze Duration")
 
         self.message = message
@@ -42,12 +48,10 @@ class CustomSnoozeModal(discord.ui.Modal):
         )
 
     async def callback(self, interaction: discord.Interaction):
+        assert interaction.user is not None, "Expected interaction user to be non-None"
+
         custom_duration_input: discord.ui.InputText = self.children[0]
-        if custom_duration_input.value is None:
-            await interaction.response.send_message(
-                "Error, duration must be specified", ephemeral=True
-            )
-            return
+        assert custom_duration_input.value is not None, "Expected custom duration input to be non-None"
 
         current_utc_time = datetime.now(timezone.utc)
         user_input = custom_duration_input.value.strip()
@@ -63,9 +67,7 @@ class CustomSnoozeModal(discord.ui.Modal):
                 },
             )
 
-            print(
-                f"Parsed datetime: {parsed_datetime} ({repr(parsed_datetime)}) from user input: '{user_input}'"
-            )
+            print(f"Parsed datetime: {parsed_datetime} ({repr(parsed_datetime)}) from user input: '{user_input}'")
 
             if parsed_datetime is None:
                 await interaction.response.send_message(
@@ -94,12 +96,8 @@ class CustomSnoozeModal(discord.ui.Modal):
 
         except Exception as e:
             log.error(f"Error parsing duration: {e}")
-            await interaction.response.send_message(
-                f"Error parsing duration: {str(e)}", ephemeral=True
-            )
+            await interaction.response.send_message(f"Error parsing duration: {str(e)}", ephemeral=True)
             return
-
-        embed = create_reminder_embed(self.message, remind_at, "Snooze...")
 
         reminder = await Reminder.create(
             discord_user_id=interaction.user.id,
@@ -110,16 +108,14 @@ class CustomSnoozeModal(discord.ui.Modal):
         )
         log.info(f"New reminder created with id {reminder.id}")
 
-        await self.original_interaction.edit_original_response(
-            content="", embed=embed, view=None
-        )
+        embed, view = create_reminder_embed(self.message, remind_at, "Snooze...", reminder)
+
+        await self.original_interaction.edit_original_response(content="", embed=embed, view=view)
         await interaction.response.defer(invisible=True)
 
     # TODO is this the correct type arg?
     class SnoozeSelect(discord.ui.Select[View]):
-        def __init__(
-            self, message: discord.Message, original_interaction: discord.Interaction
-        ):
+        def __init__(self, message: discord.Message, original_interaction: discord.Interaction):
             self.message = message
             self.original_interaction = original_interaction
             options = [
@@ -140,6 +136,8 @@ class CustomSnoozeModal(discord.ui.Modal):
             )
 
         async def callback(self, interaction: discord.Interaction):
+            assert interaction.user is not None, "Expected interaction user to be non-None"
+
             remind_at: datetime
             value = str(self.values[0])
             if value == "custom":
@@ -176,8 +174,6 @@ class CustomSnoozeModal(discord.ui.Modal):
                 current_utc_time = datetime.now(timezone.utc)
                 remind_at = current_utc_time + timedelta(seconds=duration)
 
-            embed = create_reminder_embed(self.message, remind_at, "Snooze...")
-
             reminder = await Reminder.create(
                 discord_user_id=interaction.user.id,
                 remind_at=remind_at,
@@ -187,15 +183,13 @@ class CustomSnoozeModal(discord.ui.Modal):
             )
             log.info(f"New reminder created with id {reminder.id}")
 
-            await self.original_interaction.edit_original_response(
-                content="", embed=embed, view=None
-            )
+            embed, view = create_reminder_embed(self.message, remind_at, "Snooze...", reminder)
+
+            await self.original_interaction.edit_original_response(content="", embed=embed, view=view)
 
 
 class SnoozeView(discord.ui.View):
-    def __init__(
-        self, message: discord.Message, original_interaction: discord.Interaction
-    ):
+    def __init__(self, message: discord.Message, original_interaction: discord.Interaction):
         super().__init__()
         self.add_item(CustomSnoozeModal.SnoozeSelect(message, original_interaction))
 
@@ -216,13 +210,9 @@ class Snooze(commands.Cog):
             IntegrationType.user_install
         },
     )
-    async def quick_snooze_message(
-        self, ctx: discord.ApplicationContext, message: discord.Message
-    ):
+    async def quick_snooze_message(self, ctx: discord.ApplicationContext, message: discord.Message):
         current_utc_time = datetime.now(timezone.utc)
         remind_at = current_utc_time + timedelta(seconds=5)
-
-        embed = create_reminder_embed(message, remind_at, "Quick Snooze")
 
         reminder = await Reminder.create(
             discord_user_id=ctx.author.id,
@@ -233,7 +223,9 @@ class Snooze(commands.Cog):
         )
         log.info(f"New reminder created with id {reminder.id}")
 
-        await ctx.interaction.response.send_message(embed=embed, ephemeral=True)
+        embed, view = create_reminder_embed(message, remind_at, "Quick Snooze", reminder)
+
+        await ctx.interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
     @commands.message_command(
         name="Snooze...",
@@ -247,9 +239,7 @@ class Snooze(commands.Cog):
             IntegrationType.user_install
         },
     )
-    async def snooze_message(
-        self, ctx: discord.ApplicationContext, message: discord.Message
-    ):
+    async def snooze_message(self, ctx: discord.ApplicationContext, message: discord.Message):
         snooze_view = SnoozeView(message, ctx.interaction)
         await ctx.interaction.response.send_message(
             "Choose a duration for the reminder:", view=snooze_view, ephemeral=True

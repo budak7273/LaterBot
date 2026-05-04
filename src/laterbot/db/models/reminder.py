@@ -35,5 +35,5 @@ class Reminder(models.Model):
     def __str__(self):
         return f"<Reminder at {self.remind_at} for message {self.target_message_id}>"
 
-    class Meta:
+    class Meta:  # pyright: ignore[reportIncompatibleVariableOverride] https://tortoise.github.io/models.html#inheritance
         table = "reminders"
