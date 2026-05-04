@@ -82,6 +82,7 @@ class SnoozeSelect(discord.ui.Select[View]):
         embed, view = create_reminder_embed(self.message, remind_at, "Snooze...", reminder)
 
         await self.original_interaction.edit_original_response(content="", embed=embed, view=view)
+        await interaction.response.defer()
 
 
 class SnoozeView(discord.ui.View):
