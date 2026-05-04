@@ -1,45 +1,136 @@
 """Reusable reminder UI components (buttons, modals, views)."""
 
 from datetime import datetime, timedelta, timezone
+from typing import Tuple
 
+import dateparser
 import discord
 from discord.ext import commands
+from discord.ui import View
 from db.models.reminder import Reminder
 from ezcord import log
 
 
-class LegacySecondsRescheduleModal(discord.ui.Modal):
-    """Modal for rescheduling a reminder by prompting the user for a new time (or duration) in the future."""
+def create_reminder_embed(
+    message: discord.Message,
+    remind_at: datetime,
+    footer_text: str,
+    reminder: Reminder,
+) -> Tuple[discord.Embed, View]:
+    epoch_timestamp = int(remind_at.timestamp())
+    embed = discord.Embed(
+        title=":white_check_mark: Reminding you Later™",
+        description=f"Got it - you'll be reminded about {message.jump_url} <t:{epoch_timestamp}:R> (<t:{epoch_timestamp}:F>)!",
+        color=discord.Color.green(),
+    )
+    embed.set_footer(text=footer_text)
 
-    def __init__(self, reminder: Reminder):
-        super().__init__(title="Reschedule Reminder")
-        self.reminder = reminder
+    view = ReminderActionView(reminder)
+
+    return embed, view
+
+
+class CustomSnoozeModal(discord.ui.Modal):
+    """Modal for custom snooze duration input. Handles both creating new reminders (snooze) and updating existing ones (reschedule)."""
+
+    def __init__(self, target: discord.Message | Reminder, original_interaction: discord.Interaction | None = None):
+        if isinstance(target, Reminder):
+            title = "Reschedule Reminder"
+        else:
+            title = "Custom Snooze Duration"
+
+        super().__init__(title=title)
+
+        self.target = target
+        self.original_interaction = original_interaction
 
         self.add_item(
             discord.ui.InputText(
-                label="New Duration (seconds)",
-                placeholder="Enter new duration in seconds",
+                label="Custom Duration",
+                placeholder="e.g., '2 hours', 'tomorrow at 3pm', '30 minutes', 'in 1 day'",
                 required=True,
-                custom_id="new_duration",
+                custom_id="custom_duration",
             )
         )
 
     async def callback(self, interaction: discord.Interaction):
-        new_duration_input: discord.ui.InputText = self.children[0]
-        assert type(new_duration_input.value) is str, "Required field somehow excluded"
-        new_duration = int(new_duration_input.value)
+        assert interaction.user is not None, "Expected interaction user to be non-None"
+
+        custom_duration_input: discord.ui.InputText = self.children[0]
+        assert custom_duration_input.value is not None, "Expected custom duration input to be non-None"
 
         current_utc_time = datetime.now(timezone.utc)
-        new_remind_at = current_utc_time + timedelta(seconds=new_duration)
+        user_input = custom_duration_input.value.strip()
 
-        self.reminder.remind_at = new_remind_at
-        await self.reminder.save()
+        try:
+            parsed_datetime = dateparser.parse(
+                user_input,
+                settings={
+                    "RETURN_AS_TIMEZONE_AWARE": True,
+                    "PREFER_DATES_FROM": "future",
+                    # TODO factor in user's timezone
+                    "RELATIVE_BASE": current_utc_time,
+                },
+            )
 
-        timestamp = int(new_remind_at.timestamp())
-        await interaction.response.send_message(
-            f"Reminder ID `{self.reminder.id}` has been rescheduled for <t:{timestamp}:F> (<t:{timestamp}:R>).",
-            ephemeral=True,
-        )
+            print(f"Parsed datetime: {parsed_datetime} ({repr(parsed_datetime)}) from user input: '{user_input}'")
+
+            if parsed_datetime is None:
+                await interaction.response.send_message(
+                    f"Could not parse '`{user_input}`'. Please try formats like '2 hours', 'tomorrow at 3pm', or '30 minutes'.",
+                    ephemeral=True,
+                )
+                return
+
+            if parsed_datetime.tzinfo is None:
+                # TODO can this case happen? given Timezone Ware is enabled
+                await interaction.response.send_message(
+                    f"Warning: could not detect timezone in '`{user_input}`' Assigning UTC.",
+                    ephemeral=True,
+                )
+                parsed_datetime = parsed_datetime.replace(tzinfo=timezone.utc)
+
+            if parsed_datetime <= current_utc_time:
+                timestamp = int(parsed_datetime.timestamp())
+                await interaction.response.send_message(
+                    f"The time must be in the future. <t:{timestamp}:S> is in the past (request placed at <t:{int(current_utc_time.timestamp())}:S>). Please specify a future time.",
+                    ephemeral=True,
+                )
+                return
+
+            remind_at = parsed_datetime
+
+        except Exception as e:
+            log.error(f"Error parsing duration: {e}")
+            await interaction.response.send_message(f"Error parsing duration: {str(e)}", ephemeral=True)
+            return
+
+        # Handle creating new reminder (snooze) vs updating existing (reschedule)
+        if isinstance(self.target, discord.Message):
+            # Snooze case: create new reminder
+            assert self.original_interaction is not None, "original_interaction must be provided for snooze"
+            reminder = await Reminder.create(
+                discord_user_id=interaction.user.id,
+                remind_at=remind_at,
+                target_message_id=self.target.id,
+                target_message_channel_id=self.target.channel.id,
+                target_message_jump_url=self.target.jump_url,
+            )
+            log.info(f"New reminder created with id {reminder.id}")
+
+            embed, view = create_reminder_embed(self.target, remind_at, "Snooze...", reminder)
+
+            await self.original_interaction.edit_original_response(content="", embed=embed, view=view)
+            await interaction.response.defer(invisible=True)
+        elif isinstance(self.target, Reminder):
+            self.target.remind_at = remind_at
+            await self.target.save()
+
+            timestamp = int(remind_at.timestamp())
+            await interaction.response.send_message(
+                f"Reminder ID `{self.target.id}` has been rescheduled for <t:{timestamp}:F> (<t:{timestamp}:R>).",
+                ephemeral=True,
+            )
 
 
 class ReminderCancelButton(discord.ui.Button):
@@ -95,7 +186,7 @@ class ReminderRescheduleButton(discord.ui.Button):
                 ephemeral=True,
             )
             return
-        modal = LegacySecondsRescheduleModal(self.reminder)
+        modal = CustomSnoozeModal(self.reminder)
         await interaction.response.send_modal(modal)
 
 
