@@ -8,7 +8,7 @@ from db.models.reminder import Reminder
 from ezcord import log
 
 
-class RescheduleModal(discord.ui.Modal):
+class LegacySecondsRescheduleModal(discord.ui.Modal):
     """Modal for rescheduling a reminder by prompting the user for a new time (or duration) in the future."""
 
     def __init__(self, reminder: Reminder):
@@ -95,7 +95,7 @@ class ReminderRescheduleButton(discord.ui.Button):
                 ephemeral=True,
             )
             return
-        modal = RescheduleModal(self.reminder)
+        modal = LegacySecondsRescheduleModal(self.reminder)
         await interaction.response.send_modal(modal)
 
 
