@@ -133,6 +133,23 @@ class CustomSnoozeModal(discord.ui.Modal):
             )
 
 
+async def verify_reminder_still_open(reminder: Reminder, interaction: discord.Interaction) -> bool:
+    await reminder.refresh_from_db(fields=["delivered", "errored"])
+    if reminder.delivered:
+        await interaction.response.send_message(
+            f"Reminder ID `{reminder.id}` has already been delivered or canceled, it cannot be rescheduled.",
+            ephemeral=True,
+        )
+        return False
+    elif reminder.errored:
+        await interaction.response.send_message(
+            f"Reminder ID `{reminder.id}` has errored and cannot be rescheduled. Please create a new reminder.",
+            ephemeral=True,
+        )
+        return False
+    return True
+
+
 class ReminderCancelButton(discord.ui.Button):
     """Button to cancel a reminder."""
 
@@ -155,6 +172,10 @@ class ReminderCancelButton(discord.ui.Button):
                 ephemeral=True,
             )
             return
+
+        if not await verify_reminder_still_open(self.reminder, interaction):
+            return
+
         self.reminder.delivered = True
         self.reminder.errored = True
         await self.reminder.save()
@@ -186,6 +207,10 @@ class ReminderRescheduleButton(discord.ui.Button):
                 ephemeral=True,
             )
             return
+
+        if not await verify_reminder_still_open(self.reminder, interaction):
+            return
+
         modal = CustomSnoozeModal(self.reminder)
         await interaction.response.send_modal(modal)
 

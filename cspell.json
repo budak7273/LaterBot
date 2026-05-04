@@ -11,6 +11,7 @@
         "pyenv",
         "pyproject",
         "PYTHONUNBUFFERED",
+        "Robb",
         "Unraid"
     ],
     "ignoreWords": [],

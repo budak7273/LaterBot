@@ -33,7 +33,7 @@ class Reminder(models.Model):
     # TODO auto-delete delivered messages N days after completion?
 
     def __str__(self):
-        return f"<Reminder at {self.remind_at} for message {self.target_message_id}>"
+        return f"<Reminder at {self.remind_at} for message {self.target_message_id} with status {'Errored' if self.errored else 'Delivered' if self.delivered else 'Pending'}>"
 
     class Meta:  # pyright: ignore[reportIncompatibleVariableOverride] https://tortoise.github.io/models.html#inheritance
         table = "reminders"
