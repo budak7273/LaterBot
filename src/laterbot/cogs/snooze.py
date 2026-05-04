@@ -52,11 +52,15 @@ class CustomSnoozeModal(discord.ui.Modal):
         current_utc_time = datetime.now(timezone.utc)
         user_input = custom_duration_input.value.strip()
 
-        # TODO times like '2 hours' are interpreted as 2hrs ago (undesired)
         try:
             # Try to parse as natural language using dateparser
             parsed_datetime = dateparser.parse(
-                user_input, settings={"RETURN_AS_TIMEZONE_AWARE": True}
+                user_input,
+                settings={
+                    "RETURN_AS_TIMEZONE_AWARE": True,
+                    "PREFER_DATES_FROM": "future",
+                    "RELATIVE_BASE": current_utc_time,
+                },
             )
 
             print(
