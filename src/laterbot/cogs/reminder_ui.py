@@ -94,7 +94,9 @@ class ReminderUi(commands.Cog):
                     },
                 )
 
-                print(f"Parsed datetime: {parsed_datetime} ({repr(parsed_datetime)}) from user input: '{user_input}'")
+                log.info(
+                    f"Parsed datetime: {parsed_datetime} ({repr(parsed_datetime)}) from user input: '{user_input}'"
+                )
 
                 if parsed_datetime is None:
                     await interaction.response.send_message(
