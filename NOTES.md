@@ -13,9 +13,3 @@ ATTACH DATABASE "laterbot-tortoise-BKUP.sqlite3" AS "BKUP";
 ATTACH DATABASE "laterbot-tortoise.sqlite3" AS "NEW";
 INSERT INTO NEW.reminders SELECT * FROM BKUP.reminders;
 ```
-
-Package publish:
-
-```sh
-sh build-and-push.sh budak7273
-```

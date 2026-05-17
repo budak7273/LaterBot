@@ -109,6 +109,16 @@ Find more info on Aerich with Tortoise here: <https://tortoise.github.io/migrati
 Apparently [the Aerich dev doesn't want to officially support sqlite](https://github.com/tortoise/aerich/issues/40#issuecomment-690819632) so you may need to write a bunch of migrations manually.
 To make an empty migration file to edit manually, use `aerich migrate --name migration_name_here --empty`.
 
+### Releases
+
+Docker buildx is used to prepare container packages.
+
+Build and upload packages (credentials required) via:
+
+```sh
+sh build-and-push.sh
+```
+
 ## Future
 
 - CI/CD pipeline (for now, see [NOTES.md](NOTES.md) for manual publish instructions)

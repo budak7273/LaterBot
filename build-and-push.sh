@@ -3,7 +3,7 @@
 set -e # Stop execution if any script line returns not `true`
 
 # Configuration
-GITHUB_ORG=${1:-}
+GITHUB_ORG=${1:-budak7273}
 REPOSITORY_NAME=${2:-LaterBot}
 GITHUB_TOKEN=${GITHUB_TOKEN:-}
 VERSION=${VERSION:-latest}
