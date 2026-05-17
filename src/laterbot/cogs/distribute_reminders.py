@@ -14,7 +14,7 @@ class ReminderView(discord.ui.View):
     @discord.ui.button(label="Re-snooze", style=discord.ButtonStyle.gray, emoji="🔃")
     async def re_snooze_button(self, button: discord.Button, interaction: discord.Interaction):
         button.disabled = True
-        button.label = "Re-snoozed"
+        button.label = "Re-snoozed (NOT IMPLEMENTED)"
         button.emoji = PartialEmoji(name="🔕")
 
         # log.info(f"Interaction data: {interaction.data}")
