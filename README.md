@@ -3,6 +3,19 @@
 Discord bot that lets you snooze specific messages, reminding you about them later.
 Still in development, don't expect totally safe migrations if you host it yourself.
 
+## Features
+
+- Use the Discord apps context menu on ANY message to set a reminder from ANYWHERE
+  - Pick between a preset reminder duration or specify a time with natural language (ex. `2 hours`, `10 minutes`)
+  - Works regardless of your permissions in the channel, server, or DM
+  - Setting a reminder is not seen by other users
+- Reminders are delivered to you `@silent`ly by a DM from the bot
+  - The notification contains a link back to the message and when you asked to be reminded about it
+- `/check-reminders`: Check pending reminders in your DMs with the bot
+  - Reschedule or cancel any reminder
+- React to any (non-ephemeral) bot-sent message with `❌` and the bot will delete it
+  - For cleaning up reminder messages in your DMs with the bot
+
 ## Usage
 
 Add the bot to your server with this link: (TODO, contact Robb directly or host it yourself)
@@ -69,6 +82,7 @@ PR if you find a safe way or have more info.
 - The bot will automatically create an empty database (`./data/laterbot-tortoise.sqlite3`) if it doesn't find one at startup
 - To run it for local testing, use `python .\src\laterbot` from the project root directory, or use the VSCode task
 - Linter rule help <https://pylint.readthedocs.io/en/latest/user_guide/messages/message_control.html>
+- Some things will hot reload and some won't because discord caches them, not totally sure what does/doesn't work yet
 
 To locally test the docker container, create a copy of `docker-compose-localtest.example.yml` to fill in the env vars, then run:
 
