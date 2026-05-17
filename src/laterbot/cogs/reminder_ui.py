@@ -181,9 +181,10 @@ class ReminderUi(commands.Cog):
 
             self.reminder.delivered = True
             await self.reminder.save()
+            is_private_dm = isinstance(interaction.channel, discord.DMChannel)
             await interaction.response.send_message(
                 f"Reminder ID `{self.reminder.id}` for {self.reminder.target_message_jump_url} has been canceled.",
-                ephemeral=False,
+                ephemeral=not is_private_dm,
             )
 
     class ReminderRescheduleButton(discord.ui.Button):
