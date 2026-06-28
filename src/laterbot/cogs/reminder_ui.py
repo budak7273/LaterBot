@@ -5,10 +5,25 @@ from typing import Tuple
 
 import dateparser
 import discord
+from db.models.reminder import Reminder
 from discord.ext import commands
 from discord.ui import View
-from db.models.reminder import Reminder
 from ezcord import log
+
+
+def is_direct_dm_with_user(interaction: discord.Interaction) -> bool:
+    assert interaction.user is not None, "Interaction had no user"
+
+    channel = interaction.channel
+    if not isinstance(channel, discord.DMChannel):
+        return False
+
+    assert channel.recipient is not None, "DM channel had no recipient"
+    recipient = channel.recipient
+
+    assert interaction.client.user is not None
+    # do we even need to check interaction user? seems like the recipient will always be the bot?
+    return recipient.id == interaction.user.id or recipient.id == interaction.client.user.id
 
 
 def create_reminder_embed(
@@ -183,10 +198,9 @@ class ReminderUi(commands.Cog):
 
             self.reminder.delivered = True
             await self.reminder.save()
-            is_private_dm = isinstance(interaction.channel, discord.DMChannel)
             await interaction.response.send_message(
                 f"Reminder ID `{self.reminder.id}` for {self.reminder.target_message_jump_url} has been canceled.",
-                ephemeral=not is_private_dm,
+                ephemeral=not is_direct_dm_with_user(interaction),
             )
 
     class ReminderRescheduleButton(discord.ui.Button):

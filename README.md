@@ -80,9 +80,14 @@ PR if you find a safe way or have more info.
   - NOTE: Until pycord fixes their stuff, `audioop-lts; python_version>='3.13'` is needed. The requirements file should take care of this for you.
 - Set up the `.env` file based on `.env.example`.
 - The bot will automatically create an empty database (`./data/laterbot-tortoise.sqlite3`) if it doesn't find one at startup
-- To run it for local testing, use `python .\src\laterbot` from the project root directory, or use the VSCode task
 - Linter rule help <https://pylint.readthedocs.io/en/latest/user_guide/messages/message_control.html>
 - Some things will hot reload and some won't because discord caches them, not totally sure what does/doesn't work yet
+
+### Launching
+
+To run the bot for local testing, use `python .\src\laterbot` from the project root directory, or use the VSCode "Debug LaterBot" Run & Debug action.
+
+### Testing the Docker Container Locally
 
 To locally test the docker container, create a copy of `docker-compose-localtest.example.yml` to fill in the env vars, then run:
 
